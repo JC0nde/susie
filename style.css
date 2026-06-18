@@ -1,0 +1,156 @@
+/**
+ * Susie Minimalist Theme (Cyberpunk / Terminal style)
+ */
+
+/* 1. Reset & Variables globales */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
+:root {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --accent-color: #00ffcc;
+    --code-bg: #1a1a1a;
+    --border-color: #333333;
+    --muted-color: #666666;
+}
+
+/* 2. Base HTML */
+body { 
+    font-family: monospace; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    line-height: 1.6; 
+    padding: 2rem; 
+    font-size: 18px;
+    line-height: 1.3;
+    white-space: pre-wrap;
+}
+
+a { 
+    color: var(--accent-color); 
+    text-decoration: none; 
+}
+
+a:hover { 
+    text-decoration: underline; 
+}
+
+a.logo {
+    font-weight: normal;
+    font-size: 50px;
+}
+
+p {
+  margin:1rem 0;
+}
+
+img { 
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 3. Layout (Structure) */
+main { 
+    max-width: 800px; 
+    margin: 2rem auto; 
+}
+
+.header-container, 
+.footer-container { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 1rem 0; 
+}
+
+/* Navigation Menu */
+ul { 
+    display: flex; 
+    list-style: none; 
+    gap: 1.5rem; 
+}
+
+/* 4. Composants spécifiques (Blog & Footer) */
+.site-footer { 
+    border-top: 1px solid var(--border-color); 
+    margin-top: 4rem; 
+    text-align: center; 
+}
+
+.footer-note { 
+    margin-top: 1rem; 
+    color: var(--muted-color); 
+}
+
+.post-nav {
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 40px; 
+    padding-top: 20px; 
+    border-top: 1px solid var(--border-color);
+}
+
+/* 5. Blocs de Code (Brut, sans extension) */
+pre, code { 
+    background: var(--code-bg); 
+    padding: 0.2rem 0.5rem; 
+    border-radius: 3px; 
+    color: var(--accent-color); 
+}
+
+code {
+    display: block;
+}
+
+pre { 
+    padding: 1rem; 
+    overflow-x: auto; 
+}
+
+.post-comments-cta {
+    padding-top: 1.2rem;
+}
+
+.comment-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.comment-separator {
+margin-top: 0.8rem;
+}
+
+.btn-comment {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-comment:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+    text-decoration: none;
+}
+
+.btn-comment.btn-social {
+    border-color: var(--muted-color);
+    color: var(--muted-color);
+}
+
+.btn-comment.btn-social:hover {
+    background: var(--muted-color);
+    color: var(--bg-color);
+}
