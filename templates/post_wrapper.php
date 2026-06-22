@@ -4,11 +4,10 @@
 // ==========================================
 ob_start(); 
 ?>
-<div class="post-meta-header" style="margin-bottom: 30px; padding-bottom: 20px;">
+<div class="post-meta-header" style="margin-bottom: 30px;">
     <span class="post-category" style="text-transform: uppercase; font-size: 0.8rem; color: #888;"><?= htmlspecialchars($category ?? 'Général') ?></span>
     <h1 style="margin: 10px 0 5px 0; font-size: 2.5rem;"><?= htmlspecialchars($title) ?></h1>
-    <div class="post-meta" style="font-size: 0.9rem; color: #666;">
-        Par&nbsp;<strong><?= htmlspecialchars($author ?? 'Jonathan Conde') ?></strong>&nbsp;le&nbsp;<time><?= htmlspecialchars($date) ?></time>
+    <div class="post-meta" style="font-size: 0.9rem; color: #666;">Par&nbsp;<strong><?= htmlspecialchars($author ?? 'Jonathan Conde') ?></strong>&nbsp;le&nbsp;<time><?= htmlspecialchars($date) ?></time>
     </div>
 </div>
 <?php 
@@ -34,12 +33,12 @@ $_masto_id = $meta['mastodon_id'] ?? '';
     
     <div class="comment-buttons">
         <a href="mailto:ton-email@domaine.ch?subject=<?php echo urlencode('À propos de : ' . $title); ?>" class="btn-comment btn-email">
-            ✉️ Répondre par Email
+             Répondre par Email
         </a>
         
         <?php if (!empty($_masto_id)): ?>
             <a href="https://tooting.ch/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" class="btn-comment btn-social">
-                🐘 Commenter sur Mastodon
+                 Commenter sur Mastodon
             </a>
         <?php endif; ?>
     </div>
@@ -47,7 +46,7 @@ $_masto_id = $meta['mastodon_id'] ?? '';
 
 <?php if (!empty($_masto_id)): ?>
     <div id="comments-section" style="padding-top: 2rem;">
-        <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">/ commentaires :</h3>
+        <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">$ commentaires :</h3>
         <p style="color: var(--muted-color); font-size: 14px; margin-bottom: 1.5rem; line-height: 1.4;">
             Tu as un compte Mastodon ? Réponds directement&nbsp;à&nbsp;<a href="https://tooting.ch/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" style="color: var(--accent-color); text-decoration: none; border-bottom: 1px dashed var(--accent-color);">ce pouet</a>&nbsp;pour commenter cet article.
         </p>

@@ -1,7 +1,6 @@
 ---
 title: Susie | Suisse Romande
 description: Pas d'usines à gaz, pas de jargon. Du code robuste et une liberté totale.
-lang: fr
 ---
 
 # Susie

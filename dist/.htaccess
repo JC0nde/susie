@@ -1,7 +1,7 @@
 ErrorDocument 404 /404.html
 
 # ------------------------------------------------------------------------------
-# URLS PROPRES & ROUTAGE
+# URLS PROPRES, ROUTAGE & NETTOYAGE
 # ------------------------------------------------------------------------------
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -10,6 +10,11 @@ ErrorDocument 404 /404.html
     # Forcer la redirection de index.html vers la racine /
     RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.html\ HTTP/
     RewriteRule ^index\.html$ / [R=301,L]
+
+    # NETTOYAGE ANCIENNES URLS (Redirige le contenu inexistant vers la racine)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ / [R=301,L]
 
     # Définir explicitement le fichier index
     DirectoryIndex index.html

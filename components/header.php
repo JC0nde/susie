@@ -17,12 +17,6 @@
                 </button>
             <?php endif; ?>
 
-            <nav class="main-nav">
-                <ul style="list-style: none; margin: 0; padding: 0; display: flex; gap: 15px;">
-                    <li><a href="/projets.html" style="text-decoration: none;">projets</a></li>
-                </ul>
-            </nav>
-            
         </div>
     </div>
 </header>
@@ -39,4 +33,3 @@
     </div>
 </div>
 
-<div class="site-content-wrapper" style="display: flex; flex-direction: column; gap: 30px; width: 100%; margin-top: 20px;">

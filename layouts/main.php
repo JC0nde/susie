@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<?= $lang ?? 'en' ?>">
+<html lang="<?= $lang ?? ($config['site']['lang'] ?? 'en') ?>">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +7,10 @@
         <title><?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Jonathan Conde")) ?></title>
 
         <link rel="icon" type="image/png" href="/favicon.png">
-
+        <link rel="alternate" type="application/rss+xml" title="Flux RSS de Jonathan" href="<?= $base_url ?>/feed.xml" />
         <meta name="author" content="<?= htmlspecialchars($author ?? ($config['site']['author'] ?? 'Jonathan Conde')) ?>">
         <meta name="description" content="<?= htmlspecialchars($description ?? 'Site et blog minimaliste propulsé par Susie.') ?>">
-
+        <meta name="google-site-verification" content="uCtrp8Nu2hsgx_kPPIwwDLOY_tb1BhmrcRS3TbxJ6gg" />
         <meta property="og:type" content="website">
         <meta property="og:url" content="<?= $base_url ?>/<?= htmlspecialchars($current_slug ?? 'index') ?>.html">
         <meta property="og:title" content="<?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Jonathan Conde")) ?>">
@@ -76,13 +76,6 @@
         </main>
 
         <?php include __DIR__ . '/../components/footer.php'; ?>
-
-        <div id="search-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000;">
-            <div style="background: #1a1a1a; max-width: 600px; margin: 10% auto; padding: 20px; border: 1px solid #333; font-family: monospace;">
-                <input type="text" id="search-input" placeholder="Taper pour rechercher..." style="width: 100%; padding: 10px; background: #121212; color: #00ffcc; border: 1px solid #333; font-family: monospace;" autofocus>
-                <ul id="search-results" style="list-style: none; padding: 0; margin-top: 20px; max-height: 300px; overflow-y: auto;"></ul>
-            </div>
-        </div>
 
         <?php if (getenv('DEV_MODE') === '1'): ?>
         <script>

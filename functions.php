@@ -9,6 +9,7 @@ $config = file_exists(__DIR__ . '/config.ini') ? parse_ini_file(__DIR__ . '/conf
 $base_url = $config['site']['base_url'] ?? 'http://localhost:8000';
 $site_author = $config['site']['author'] ?? 'Susie User';
 $site_title = $config['site']['title'] ?? 'Minimalist Suckless Blog';
+$site_lang = $config['site']['lang'] ?? 'en';
 
 // 2. Determine the current page slug (Injected by build.sh, defaults to 'index')
 $current_slug = $current_slug ?? ($filename_slug ?? 'index');
@@ -110,7 +111,7 @@ function get_blog_posts() {
             'slug' => $filename,
             'title' => $meta['title'] ?? ucwords(str_replace('-', ' ', $filename)),
             'date' => $date,
-            'lang' => $meta['lang'] ?? 'en',
+            'lang' => $meta['lang'] ?? $site_lang,
             'description' => $meta['description'] ?? 'A minimalist post.',
             'author' => $meta['author'] ?? $site_author, 
             'category' => $meta['category'] ?? 'General',
@@ -156,7 +157,7 @@ function minify_html($html) {
 
     $replace = ['', ' '];
     $html = preg_replace($search, $replace, $html);
-    $html = str_replace(["> ", " <"], [">", "<"], $html);
+    $html = preg_replace('/>\s+</', '><', $html);
 
     if (!empty($placeholders)) {
         $html = str_replace(array_keys($placeholders), array_values($placeholders), $html);
