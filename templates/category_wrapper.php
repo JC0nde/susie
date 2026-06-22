@@ -1,8 +1,14 @@
 <?php
 // $category_name, $category_posts, $current_slug sont injectés par build.sh
+// On s'assure de récupérer la langue globale si besoin
+global $site_lang;
+
 $title = $category_name . ' — Articles';
 $description = 'Articles dans la catégorie ' . $category_name;
-$lang = 'fr';
+$lang = $site_lang; // UNIFICATION : On transmet proprement la langue au layout
+
+// On instancie Parsedown une seule fois ici pour économiser les ressources de Susie
+$parsedown = new Parsedown();
 
 ob_start();
 ?>
@@ -15,7 +21,8 @@ ob_start();
                     <a href="/blog/<?= htmlspecialchars($post['slug']) ?>.html"><?= htmlspecialchars($post['title']) ?></a>
                 </h2>
                 <div class="excerpt">
-                    <?= (new Parsedown())->text($post['excerpt_markdown']) ?>
+                    <!-- Utilisation de l'instance unique de Parsedown -->
+                    <?= $parsedown->text($post['excerpt_markdown']) ?>
                 </div>
                 <a href="/blog/<?= htmlspecialchars($post['slug']) ?>.html" class="read-more">Lire l'article complet →</a>
             </article>

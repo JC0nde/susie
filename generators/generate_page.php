@@ -12,44 +12,42 @@ if (!$filepath || !$filename_slug || !file_exists($filepath)) {
 $current_slug = $filename_slug;
 $extension = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
 
-// Valeurs par défaut
-$title = 'Jonathan Conde';
-$description = 'Site minimaliste';
-$lang = 'fr';
+// UNIFICATION : Utilisation des variables globales chargées depuis config.ini par functions.php
+global $site_lang, $site_title, $site_author;
+
+$title = $site_title;
+$description = 'Site et blog minimaliste.';
+$lang = $site_lang; // Par défaut, on prend la langue globale (fr, en, etc.)
+$author = $site_author;
 
 if ($extension === 'md') {
     // --- CAS 1 : C'EST DU MARKDOWN ---
-    $file_content = file_get_contents($filepath);
-    $content_raw = $file_content;
+    // Utilisation de la fonction centralisée parse_front_matter() pour éviter les duplications de regex
+    $parsed = parse_front_matter($filepath);
+    $meta = $parsed['meta'];
+    $content_raw = apply_responsive_images($parsed['markdown']);
 
-    // Extraction Front-Matter YAML
-    if (preg_match('/^---\s*\n(.*?)\n---\s*\n(.*)/s', $file_content, $matches)) {
-        $front_matter = $matches[1];
-        $content_raw = $matches[2];
-
-        foreach (explode("\n", $front_matter) as $line) {
-            if (strpos($line, ':') !== false) {
-                list($key, $value) = explode(':', $line, 2);
-                $key = trim($key);
-                $value = trim($value);
-                if ($key === 'title') $title = $value;
-                if ($key === 'description') $description = $value;
-                if ($key === 'lang') $lang = $value;
-            }
-        }
-    }
+    // Overrides locales via le Front Matter du fichier .md
+    if (isset($meta['title'])) $title = $meta['title'];
+    if (isset($meta['description'])) $description = $meta['description'];
+    if (isset($meta['lang'])) $lang = $meta['lang'];
+    if (isset($meta['author'])) $author = $meta['author'];
 
     $parsedown = new Parsedown();
-    $content = $parsedown->text(apply_responsive_images($content_raw));
+    $content = $parsedown->text($content_raw);
 
 } else {
     // --- CAS 2 : C'EST DU PHP ---
+    // On exécute le fichier PHP. S'il contient des variables $title, $lang, etc., 
+    // elles écraseront proprement les valeurs par défaut définies plus haut.
     ob_start();
     include $filepath;
     $content = ob_get_clean();
 }
 
-// Emballage final dans le layout
-ob_start();
-include __DIR__ . '/../layouts/main.php';
-echo minify_html(ob_get_clean());
+// Emballage final dans le layout main.php
+if (file_exists(__DIR__ . '/../layouts/main.php')) {
+    ob_start();
+    include __DIR__ . '/../layouts/main.php';
+    echo minify_html(ob_get_clean());
+}
