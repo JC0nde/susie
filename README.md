@@ -43,7 +43,7 @@ You only need standard terminal utilities and PHP installed locally:
 
 1. Clone the repository:
  ```bash
-git clone [https://github.com/JC0nde/susie.git](https://github.com/JC0nde/susie.git)
+git clone https://github.com/JC0nde/susie.git
 cd susie
 ```
 2. Configure your site:
