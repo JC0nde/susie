@@ -1,6 +1,9 @@
 <img src="susie.png" alt="Susie Logo" width="300" valign="middle">
 
 #  Susie
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-blue.svg)](https://www.php.net/)
+[![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)](https://suckless.org/)
 
 > A minimalist, high-performance static site and blog generator powered by native Bash and PHP. Built with the "suckless" philosophy in mind: no heavy dependencies, no bloated node_modules, just pure speed and efficiency.
 
