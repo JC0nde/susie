@@ -1,4 +1,6 @@
-# <img src="susie.png" alt="Susie Logo" width="60" valign="middle"> Susie
+<img src="susie.png" alt="Susie Logo" width="300" valign="middle">
+
+#  Susie
 
 > A minimalist, high-performance static site and blog generator powered by native Bash and PHP. Built with the "suckless" philosophy in mind: no heavy dependencies, no bloated node_modules, just pure speed and efficiency.
 
