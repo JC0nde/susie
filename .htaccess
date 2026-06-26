@@ -1,27 +1,33 @@
 ErrorDocument 404 /404.html
 
 # ------------------------------------------------------------------------------
-# URLS PROPRES, ROUTAGE & NETTOYAGE
+# CLEAN URLS, ROUTING & CLEANUP
 # ------------------------------------------------------------------------------
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # Forcer la redirection de index.html vers la racine /
+    # FORCING HTTPS (Optional)
+    # Uncomment the two lines below if you want to force HTTPS redirection
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # Force redirection from index.html to the root /
     RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.html\ HTTP/
     RewriteRule ^index\.html$ / [R=301,L]
 
-    # NETTOYAGE ANCIENNES URLS (Redirige le contenu inexistant vers la racine)
+    # Route nonexistent URLs to the 404 page
+    RewriteCond %{REQUEST_URI} !^/404\.html$
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ / [R=301,L]
+    RewriteRule ^(.*)$ /404.html [R=301,L]
 
-    # Définir explicitement le fichier index
+    # Explicitly set the default directory index
     DirectoryIndex index.html
 </IfModule>
 
 # ------------------------------------------------------------------------------
-# OPTIMISATIONS & CACHE
+# OPTIMIZATIONS & CACHE
 # ------------------------------------------------------------------------------
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -35,7 +41,7 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 # ------------------------------------------------------------------------------
-# SÉCURITÉ
+# SECURITY HEADERS
 # ------------------------------------------------------------------------------
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
@@ -43,7 +49,7 @@ ErrorDocument 404 /404.html
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# Bloquer l'accès aux fichiers sensibles du moteur de Susie
+# Block public access to engine configuration and sensitive core files
 <FilesMatch "\.(sh|ini|md)$">
     Require all denied
 </FilesMatch>

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Susie - Static Page Generator Engine
+ * Compiles both pure PHP files and Markdown static pages into minified production HTML.
+ *
+ * @package Susie
+ */
+
 require __DIR__ . '/../functions.php';
 
 $filepath = $argv[1] ?? null;
@@ -12,22 +19,22 @@ if (!$filepath || !$filename_slug || !file_exists($filepath)) {
 $current_slug = $filename_slug;
 $extension = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
 
-// UNIFICATION : Utilisation des variables globales chargées depuis config.ini par functions.php
+// Ingest global site variables parsed from config.ini
 global $site_lang, $site_title, $site_author;
 
 $title = $site_title;
-$description = 'Site et blog minimaliste.';
-$lang = $site_lang; // Par défaut, on prend la langue globale (fr, en, etc.)
+$description = 'A minimalist static page powered by Susie.';
+$lang = $site_lang; 
 $author = $site_author;
 
 if ($extension === 'md') {
-    // --- CAS 1 : C'EST DU MARKDOWN ---
-    // Utilisation de la fonction centralisée parse_front_matter() pour éviter les duplications de regex
+    // --- STRATEGY A: MARKDOWN PARSING ---
+    // Extract metadata block and source markdown content using unified core helpers
     $parsed = parse_front_matter($filepath);
     $meta = $parsed['meta'];
     $content_raw = apply_responsive_images($parsed['markdown']);
 
-    // Overrides locales via le Front Matter du fichier .md
+    // Contextual overrides from local Markdown Front Matter blocks
     if (isset($meta['title'])) $title = $meta['title'];
     if (isset($meta['description'])) $description = $meta['description'];
     if (isset($meta['lang'])) $lang = $meta['lang'];
@@ -37,15 +44,14 @@ if ($extension === 'md') {
     $content = $parsedown->text($content_raw);
 
 } else {
-    // --- CAS 2 : C'EST DU PHP ---
-    // On exécute le fichier PHP. S'il contient des variables $title, $lang, etc., 
-    // elles écraseront proprement les valeurs par défaut définies plus haut.
+    // --- STRATEGY B: NATIVE PHP INGESTION ---
+    // Buffer native PHP execution. Local layout variables will naturally override defaults.
     ob_start();
     include $filepath;
     $content = ob_get_clean();
 }
 
-// Emballage final dans le layout main.php
+// Assemble page wrapper structure inside global main layout
 if (file_exists(__DIR__ . '/../layouts/main.php')) {
     ob_start();
     include __DIR__ . '/../layouts/main.php';

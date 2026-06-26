@@ -4,28 +4,29 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title><?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Jonathan Conde")) ?></title>
+        <title><?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Susie Blog")) ?></title>
 
         <link rel="icon" type="image/png" href="/favicon.png">
-        <link rel="alternate" type="application/rss+xml" title="Flux RSS de Jonathan" href="<?= $base_url ?>/feed.xml" />
-        <meta name="author" content="<?= htmlspecialchars($author ?? ($config['site']['author'] ?? 'Jonathan Conde')) ?>">
-        <meta name="description" content="<?= htmlspecialchars($description ?? 'Site et blog minimaliste propulsé par Susie.') ?>">
-        <meta name="google-site-verification" content="uCtrp8Nu2hsgx_kPPIwwDLOY_tb1BhmrcRS3TbxJ6gg" />
+        <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="<?= $base_url ?>/feed.xml" />
+        <meta name="author" content="<?= htmlspecialchars($author ?? ($config['site']['author'] ?? 'Susie User')) ?>">
+        <meta name="description" content="<?= htmlspecialchars($description ?? 'A minimalist static blog powered by Susie.') ?>">
+        
         <meta property="og:type" content="website">
         <meta property="og:url" content="<?= $base_url ?>/<?= htmlspecialchars($current_slug ?? 'index') ?>.html">
-        <meta property="og:title" content="<?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Jonathan Conde")) ?>">
-        <meta property="og:description" content="<?= htmlspecialchars($description ?? 'Site et blog minimaliste.') ?>">
+        <meta property="og:title" content="<?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Susie Blog")) ?>">
+        <meta property="og:description" content="<?= htmlspecialchars($description ?? 'A minimalist static blog.') ?>">
         <meta property="og:image" content="<?= $base_url ?>/favicon.png">
 
         <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:title" content="<?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Jonathan Conde")) ?>">
-        <meta property="twitter:description" content="<?= htmlspecialchars($description ?? 'Site et blog minimaliste.') ?>">
+        <meta property="twitter:title" content="<?= htmlspecialchars($title ?? ($config['site']['title'] ?? "Susie Blog")) ?>">
+        <meta property="twitter:description" content="<?= htmlspecialchars($description ?? 'A minimalist static blog.') ?>">
 
         <?php if (!empty($noindex)): ?>
                 <meta name="robots" content="noindex, follow">
         <?php endif; ?>
 
         <?php 
+        // Asset pipeline routing strategies (inline style extraction vs linked asset stylesheets)
         $css_mode = $config['assets']['css_mode'] ?? 'inline';
         $build_ver = getenv('BUILD_VERSION') ?: time(); 
         ?>
@@ -45,9 +46,9 @@
         <?php endif; ?>
 
         <?php 
-        // Correction des chemins pour le pipeline d'assets pendant le build
+        // JavaScript pipeline path resolution during active staging phases
         $js_mode = $config['assets']['js_mode'] ?? 'inline';
-        $base_dir = __DIR__ . '/../dist_tmp'; // Pendant le build, Susie écrit dans dist_tmp
+        $base_dir = __DIR__ . '/../dist_tmp';
         
         $js_inline_file = $base_dir . '/temp_bundle.js';
         $js_bundle_file = $base_dir . '/bundle.js';
@@ -92,7 +93,7 @@
                                 location.reload();
                             }
                         })
-                        .catch(function() { /* serveur down pendant rebuild */ });
+                        .catch(function() { /* Server compilation transit phase timeout bypass */ });
                 }, 1000);
             })();
         </script>

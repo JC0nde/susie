@@ -1,8 +1,15 @@
 <?php
+/**
+ * Susie - RSS Feed Manifest Synthesizer
+ * Scans compiled markdown posts and generates a clean, standards-compliant RSS 2.0 XML file.
+ *
+ * @package Susie
+ */
+
 require __DIR__ . '/../functions.php';
 
 if (function_exists('get_blog_posts')) {
-    global $site_lang;
+    global $site_lang, $site_title;
 
     $posts = get_blog_posts();
     $rss = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL;
@@ -10,23 +17,23 @@ if (function_exists('get_blog_posts')) {
     $rss .= '<channel>' . PHP_EOL;
     $rss .= '  <title>' . htmlspecialchars($site_title) . '</title>' . PHP_EOL;
     $rss .= '  <link>' . $base_url . '</link>' . PHP_EOL;
-    $rss .= '  <description>Suckless Minimalist Space Ecosystem Feed</description>' . PHP_EOL;
+    $rss .= '  <description>A minimalist open-source web space powered by Susie.</description>' . PHP_EOL;
     $rss .= '  <language>' . $site_lang . '</language>' . PHP_EOL;
     $rss .= '  <atom:link href="' . $base_url . '/feed.xml" rel="self" type="application/rss+xml" />' . PHP_EOL;
 
-    // On instancie Parsedown une seule fois pour le traitement
+    // Instantiate Parsedown once to minimize runtime memory footprint
     $parsedown = new Parsedown();
 
     foreach ($posts as $post) {
-        // CORRECTION SUCKLESS : On repart du fichier Markdown source pour éviter le bruit du HTML final
+        // SUCKLESS PATTERN: Parse directly from the raw Markdown source file to eliminate HTML layout noise
         $md_file = __DIR__ . '/../posts/' . $post['slug'] . '.md';
         if (!file_exists($md_file)) continue;
 
-        // On extrait le markdown propre (sans le front matter)
+        // Separate and parse metadata structures from body contents
         $parsed = parse_front_matter($md_file);
         $clean_markdown = apply_responsive_images($parsed['markdown']);
 
-        // On convertit le markdown en HTML pur (sans templates, sans scripts, sans commentaires)
+        // Convert the Markdown into pure HTML nodes without any tracking or layout templates
         $article_content = trim($parsedown->text($clean_markdown));
         
         $date_timestamp = strtotime($post['date']);
@@ -44,6 +51,7 @@ if (function_exists('get_blog_posts')) {
 
     $rss .= '</channel>' . PHP_EOL;
     $rss .= '</rss>' . PHP_EOL;
+    
     file_put_contents('dist_tmp/feed.xml', $rss);
     echo "[BUILD] Syndication Module: feed.xml generated." . PHP_EOL;
 }

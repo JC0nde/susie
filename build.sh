@@ -4,18 +4,17 @@ shopt -s extglob
 # Susie - Suckless Static Site Generator Orchestrator Pipeline
 # ==============================================================================
 
-# Microtime initialization benchmark via PHP
+# Initialize microtime benchmark via PHP
 START_TIME=$(php -r 'echo microtime(true);')
 
 # ------------------------------------------------------------------------------
 # 1. Environment Purge & Workspace Initialization
 # ------------------------------------------------------------------------------
-mkdir -p dist
-if [ -d "dist" ]; then
-    find dist -mindepth 1 -maxdepth 1 ! -name 'images' -exec rm -rf {} +
-fi
-# Récupérer le cache images de l'ancien dist/ si il existe
+# Prepare a clean temporary staging directory
+rm -rf dist_tmp
 mkdir -p dist_tmp/images
+
+# SUCKLESS CACHE MANAGEMENT: Recover image cache from current production build if available
 if [ -d "dist/images" ]; then
     cp -r dist/images/. dist_tmp/images/
 fi
@@ -28,7 +27,7 @@ date +%s > dist_tmp/build-version.txt
 IGNORE_FILES=$(grep -E '^ignore_files[[:space:]]*=' config.ini | cut -d'=' -f2 | tr -d '"')
 CSS_MODE=$(grep -E '^css_mode[[:space:]]*=' config.ini | cut -d'"' -f2)
 
-# Global compilation of external stylesheets (via le nouveau minify_css)
+# Global compilation of external stylesheets
 if [ -f "style.css" ]; then
     php -r "
         require 'functions.php';
@@ -53,7 +52,7 @@ if [ -d "images" ]; then
         CONVERTED=0
         SKIPPED=0
 
-        # Conversion des formats raster supportés (avec cache mtime)
+        # Convert supported raster formats using mtime caching
         for img in images/*.{jpg,jpeg,png,JPG,JPEG,PNG}; do
             [ -e "$img" ] || continue
             filename=$(basename "$img")
@@ -72,7 +71,7 @@ if [ -d "images" ]; then
             CONVERTED=$((CONVERTED + 1))
         done
 
-        # Copie brute des formats non convertis (svg, webp, gif, etc.) — avec cache
+        # Raw copy for unconvertible formats (svg, webp, gif, etc.) using mtime caching
         for img in images/*.!(jpg|jpeg|png|JPG|JPEG|PNG); do
             [ -e "$img" ] || continue
             filename=$(basename "$img")
@@ -88,9 +87,9 @@ if [ -d "images" ]; then
         done
 
         shopt -u nullglob
-        echo "   -> ${CONVERTED} image(s) traitee(s), ${SKIPPED} ignoree(s) (cache)."
+        echo "   -> ${CONVERTED} image(s) processed, ${SKIPPED} skipped (cached)."
 
-        # Nettoyage des fichiers orphelins dans dist/images/ (sources supprimées)
+        # Remove orphan files from staging area (where sources were deleted)
         ORPHANS=0
         shopt -s nullglob
         for f in dist_tmp/images/*; do
@@ -114,7 +113,7 @@ if [ -d "images" ]; then
         done
         shopt -u nullglob
 
-        [ "$ORPHANS" -gt 0 ] && echo "   -> ${ORPHANS} fichier(s) orphelin(s) supprime(s) de dist/images/."
+        [ "$ORPHANS" -gt 0 ] && echo "   -> ${ORPHANS} orphan file(s) removed from image directory."
     fi
 fi
 
@@ -149,15 +148,17 @@ else
 fi
 
 # =========================================================
-# 3. Compilation intelligente (PHP exécuté / MD parsé)
+# 3. Core Compilation (PHP executed / MD parsed)
 # =========================================================
 if [ -d "pages" ]; then
+    PAGES_LINKS_LIST="" # Core Manifest: Initializing static pages crawler index
+
     find pages -type f \( -name "*.php" -o -name "*.md" \) | while read -r filepath; do
 
         filename_raw=$(basename "$filepath")
         extension="${filename_raw##*.}"
 
-        # Ignorer les fichiers exclus
+        # Skip ignored/excluded files
         if echo "$IGNORE_FILES" | grep -qE "(^| )$filename_raw( |$)"; then
             echo "[IGNORE] Ingestion Rule: Static page ignored -> $filename_raw"
             continue
@@ -169,8 +170,13 @@ if [ -d "pages" ]; then
         filename_slug="${relative_path%.*}"
 
         php generators/generate_page.php "$filepath" "$filename_slug" > "$output_html"
-
         echo "[PAGE]  Generated [ $extension -> HTML ] : $output_html"
+
+        # LLM INDEXING MODULE: Cataloging generic public static pages (bypassing index/404 indices)
+        if [ "$filename_slug" != "index" ] && [ "$filename_slug" != "404" ]; then
+            clean_page_title=$(echo "$filename_slug" | tr '-' ' ' | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+            PAGES_LINKS_LIST="${PAGES_LINKS_LIST}- [${clean_page_title}](${BASE_URL}/${filename_slug})\n"
+        fi
     done
 fi
 
@@ -179,6 +185,8 @@ fi
 # ------------------------------------------------------------------------------
 if [ -d "posts" ]; then
     mkdir -p dist_tmp/blog
+    POSTS_LINKS_LIST="" # Core Manifest: Initializing dynamic articles crawler index
+
     for filepath in posts/*.md; do
         [ -e "$filepath" ] || continue
         filename_raw=$(basename "$filepath")
@@ -187,8 +195,13 @@ if [ -d "posts" ]; then
             echo "[IGNORE] Ingestion Rule: Markdown post ignored -> $filename_raw"
             continue
         fi
+        
         php generators/generate_post.php "$filepath" "$filename" > "dist_tmp/blog/${filename}.html"
         echo "[POST]  Generated : dist_tmp/blog/${filename}.html"
+
+        # LLM INDEXING MODULE: Compiling structured list records for syndicated articles
+        clean_title=$(echo "$filename" | tr '-' ' ' | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+        POSTS_LINKS_LIST="${POSTS_LINKS_LIST}- [${clean_title}](${BASE_URL}/blog/${filename})\n"
     done
 fi
 
@@ -234,11 +247,23 @@ rm -f dist_tmp/temp_bundle.js
 rm -f style.min.css
 [ -f ".htaccess" ] && cp .htaccess dist_tmp/.htaccess
 
-# Swap atomique : dist_tmp devient dist sans trou de disponibilité
-rm -rf dist_old
-mv dist dist_old 2>/dev/null || true
-mv dist_tmp dist
-rm -rf dist_old
+# Module D: Universal LLMS Context Discovery Matrix Manifest
+if [ -f "generators/generate_llms.php" ]; then
+    php generators/generate_llms.php
+else
+    echo "[SKIP]  LLM Module: Context discovery matrix framework missing."
+fi
+
+rm -f dist_tmp/build-version.txt
+
+# ATOMIC SWAP: Zero-downtime hot-swap replacing production directory
+if [ -d "dist" ]; then
+    mv dist dist_old
+    mv dist_tmp dist
+    rm -rf dist_old
+else
+    mv dist_tmp dist
+fi
 
 END_TIME=$(php -r 'echo microtime(true);')
 ELAPSED_MS=$(php -r "echo round(($END_TIME - $START_TIME) * 1000);")

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
-  <title>conde</title>
-  <link>https://jonathanconde.com</link>
-  <description>Suckless Minimalist Space Ecosystem Feed</description>
-  <language>fr</language>
-  <atom:link href="https://jonathanconde.com/feed.xml" rel="self" type="application/rss+xml" />
+  <title>Susie</title>
+  <link>https://example.com</link>
+  <description>A minimalist open-source web space powered by Susie.</description>
+  <language>en</language>
+  <atom:link href="https://example.com/feed.xml" rel="self" type="application/rss+xml" />
   <item>
     <title>/dev/null ou l&#039;art de repartir de zéro</title>
-    <link>https://jonathanconde.com/blog/pourquoi-un-blog-en-2026.html</link>
-    <guid isPermaLink="true">https://jonathanconde.com/blog/pourquoi-un-blog-en-2026.html</guid>
+    <link>https://example.com/blog/pourquoi-un-blog-en-2026.html</link>
+    <guid isPermaLink="true">https://example.com/blog/pourquoi-un-blog-en-2026.html</guid>
     <pubDate>Thu, 18 Jun 2026 00:00:00 +0000</pubDate>
-    <description>A minimalist post.</description>
+    <description>En 2026, retour aux sources : un blog statique codé à la main et une envie de retrouver un web plus libre et humain.</description>
     <content:encoded><![CDATA[<p>Hier je me suis crée un compte <a href="https://joinmastodon.org/fr/apps">mastodon</a>. Aujourd'hui j'ai fait table rase de mon ancien site et lancé un blog statique fait main. Tout ça en 2026. Non mais c'est vrai quoi! Ras-le-bol de tous ces outils web hyper bloated, raz-le-bol de tous ces trackers partout, ras le bol de l'emprise des GAFAM qui nous enchaînent à leurs outils foireux! Un gros ras le bol quoi! J'avais choisi ce boulot (developpeur web) pour la liberté qu'il me procurait, pour l'envie de créer, d'expérimenter, de m'amuser et pourtant je suis las, le web me sortait par les oreilles. Trop de bruit, trop d'experts, et pourtant le web ne s'est jamais si mal porté.</p>
 <p>J'ai donc décidé de revenir aux bases. De m'amuser, de me battre et peut-être me faire des amis...</p>
 <p>Suis-je teubé? L'avenir me le dira...</p>]]></content:encoded>

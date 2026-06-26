@@ -2,64 +2,62 @@
 /**
  * Susie - A Suckless Static Site Generator
  * Core Engine & Global Helpers
+ *
+ * @package Susie
+ * @license MIT
  */
 
 // 1. Load Configuration
 $config = file_exists(__DIR__ . '/config.ini') ? parse_ini_file(__DIR__ . '/config.ini', true) : [];
-$base_url = $config['site']['base_url'] ?? 'http://localhost:8000';
+$base_url   = $config['site']['base_url'] ?? 'http://localhost:8000';
 $site_author = $config['site']['author'] ?? 'Susie User';
-$site_title = $config['site']['title'] ?? 'Minimalist Suckless Blog';
-$site_lang = $config['site']['lang'] ?? 'en';
+$site_title  = $config['site']['title'] ?? 'Minimalist Suckless Blog';
+$site_lang   = $config['site']['lang'] ?? 'en';
 
-// 2. Determine the current page slug (Injected by build.sh, defaults to 'index')
+// 2. State & Dependencies
 $current_slug = $current_slug ?? ($filename_slug ?? 'index');
 
-// Load Markdown Parser dependency
 if (file_exists(__DIR__ . '/Parsedown.php')) {
     require_once __DIR__ . '/Parsedown.php';
 }
 
 /**
- * Filter: Transforms standard Markdown images into responsive HTML5 <picture> tags
- * for convertible formats (jpg/jpeg/png), or a simple <img> tag pointing to the
- * original file for formats that are copied as-is (gif, svg, webp...).
+ * Filter: Transforms MD images into responsive HTML5 <picture> tags for WebP,
+ * or simple <img> tags for unconvertible assets (gif, svg, etc.).
  */
 function apply_responsive_images($markdown_content) {
     $pattern = '/\!\[(.*?)\]\(images\/([^)]+?)(?:\.([a-zA-Z0-9]+))?\)/i';
 
     return preg_replace_callback($pattern, function($matches) {
-        $alt = $matches[1];
-        $basename = $matches[2];
+        $alt       = $matches[1];
+        $basename  = $matches[2];
         $extension = isset($matches[3]) && $matches[3] !== '' ? strtolower($matches[3]) : '';
 
         $convertible = ['jpg', 'jpeg', 'png'];
 
         if ($extension === '' || in_array($extension, $convertible)) {
-            // Pas d'extension fournie, ou format convertible → WebP responsive
             return '<picture>
         <source media="(max-width: 600px)" srcset="/images/' . $basename . '-mobile.webp" type="image/webp">
         <img src="/images/' . $basename . '.webp" alt="' . $alt . '" loading="lazy">
     </picture>';
         }
 
-        // Formats copiés tels quels (gif, svg, webp fourni, etc.)
         return '<img src="/images/' . $basename . '.' . $extension . '" alt="' . $alt . '" loading="lazy">';
-
     }, $markdown_content);
 }
 
 /**
- * Parses Front Matter metadata blocks delimited by "---" from Markdown files.
+ * Parses Front Matter YAML-like blocks delimited by "---" from Markdown files.
  */
 function parse_front_matter($file_path) {
     $content = file_get_contents($file_path);
-    $parts = preg_split('/^---[\s]*$/m', $content);
+    $parts   = preg_split('/^---[\s]*$/m', $content);
     
-    $meta = [];
+    $meta     = [];
     $markdown = $content;
 
     if (count($parts) >= 3) {
-        $markdown = trim($parts[2]);
+        $markdown   = trim($parts[2]);
         $meta_lines = explode("\n", trim($parts[1]));
         foreach ($meta_lines as $line) {
             if (strpos($line, ':') !== false) {
@@ -70,7 +68,7 @@ function parse_front_matter($file_path) {
     }
 
     return [
-        'meta' => $meta,
+        'meta'     => $meta,
         'markdown' => $markdown
     ];
 }
@@ -79,10 +77,9 @@ function parse_front_matter($file_path) {
  * Scans the posts directory and extracts compiled metadata collections.
  */
 function get_blog_posts() {
-    global $site_author;
+    global $site_author, $site_lang;
     $posts = [];
-    // FIX : Utilisation de __DIR__ au lieu de getcwd() pour sécuriser l'arborescence
-    $dir = __DIR__ . '/posts';
+    $dir   = __DIR__ . '/posts';
     
     if (!is_dir($dir)) return $posts;
 
@@ -90,12 +87,12 @@ function get_blog_posts() {
     foreach ($files as $file) {
         $filename = basename($file, '.md');
         
-        $parsed = parse_front_matter($file);
-        $meta = $parsed['meta'];
-        $clean_markdown = $parsed['markdown'];
+        $parsed          = parse_front_matter($file);
+        $meta            = $parsed['meta'];
+        $clean_markdown  = $parsed['markdown'];
         
         // Generate automatic plain-text fallback excerpt
-        $lines = explode("\n", $clean_markdown);
+        $lines         = explode("\n", $clean_markdown);
         $excerpt_lines = [];
         foreach ($lines as $line) {
             $line = trim($line);
@@ -108,13 +105,13 @@ function get_blog_posts() {
         $date = $meta['date'] ?? date('Y-m-d');
 
         $posts[] = [
-            'slug' => $filename,
-            'title' => $meta['title'] ?? ucwords(str_replace('-', ' ', $filename)),
-            'date' => $date,
-            'lang' => $meta['lang'] ?? $site_lang,
-            'description' => $meta['description'] ?? 'A minimalist post.',
-            'author' => $meta['author'] ?? $site_author, 
-            'category' => $meta['category'] ?? 'General',
+            'slug'             => $filename,
+            'title'            => $meta['title'] ?? ucwords(str_replace('-', ' ', $filename)),
+            'date'             => $date,
+            'lang'             => $meta['lang'] ?? $site_lang,
+            'description'      => $meta['description'] ?? 'A minimalist post.',
+            'author'           => $meta['author'] ?? $site_author, 
+            'category'         => $meta['category'] ?? 'General',
             'excerpt_markdown' => implode("\n\n", $excerpt_lines)
         ];
     }
@@ -145,19 +142,19 @@ function minify_html($html) {
     $placeholders = [];
     
     foreach ($matches[0] as $i => $match) {
-        $placeholder = "___SUSTAIN_CODE_BLOCK_" . $i . "___";
+        $placeholder               = "___SUSTAIN_CODE_BLOCK_" . $i . "___";
         $placeholders[$placeholder] = $match;
-        $html = str_replace($match, $placeholder, $html);
+        $html                      = str_replace($match, $placeholder, $html);
     }
 
     $search = [
-        '//ms', // Remove standard HTML comments
-        '/\s+/u',          // Collapse multi-spaces and newlines
+        '//ms',       // Remove standard HTML comments
+        '/\s+/u',     // Collapse multi-spaces and newlines
     ];
 
     $replace = ['', ' '];
-    $html = preg_replace($search, $replace, $html);
-    $html = preg_replace('/>\s+</', '><', $html);
+    $html    = preg_replace($search, $replace, $html);
+    $html    = preg_replace('/>\s+</', '><', $html);
 
     if (!empty($placeholders)) {
         $html = str_replace(array_keys($placeholders), array_values($placeholders), $html);
@@ -166,17 +163,15 @@ function minify_html($html) {
     return trim($html);
 }
 
-
 /**
  * Returns categories as a map: slug => ['name' => ..., 'posts' => [...]]
- * A post can belong to multiple categories (comma-separated in frontmatter).
+ * Supports comma-separated multi-categorization.
  */
 function get_categories() {
-    $posts = get_blog_posts();
+    $posts      = get_blog_posts();
     $categories = [];
 
     foreach ($posts as $post) {
-        // Split sur virgule, trim, ignore les vides
         $names = array_filter(array_map('trim', explode(',', $post['category'])));
 
         foreach ($names as $name) {
@@ -184,7 +179,7 @@ function get_categories() {
 
             if (!isset($categories[$slug])) {
                 $categories[$slug] = [
-                    'name' => $name,
+                    'name'  => $name,
                     'posts' => []
                 ];
             }
@@ -196,7 +191,7 @@ function get_categories() {
 }
 
 /**
- * Simple slugify: lowercase, spaces/accents to hyphens, strip non-alphanumeric.
+ * URL Slugifier: converts spaces, accents, and special characters into clean hyphens.
  */
 function slugify($text) {
     $text = strtolower($text);
@@ -210,11 +205,23 @@ function slugify($text) {
 }
 
 /**
- * Minifies CSS strings without breaking advanced selectors or media queries.
+ * Minifies CSS strings natively.
  */
 function minify_css($css) {
     $css = preg_replace('!/\*[^*]*\*+([^/*][^*]*\*+)*/!', '', $css);
     $css = str_replace(["\r\n", "\r", "\n", "\t"], '', $css);
     $css = preg_replace('/\s*([\{\}\:\;,])\s*/', '$1', $css);
     return trim(preg_replace('/\s+/', ' ', $css));
+}
+
+/**
+ * Obfuscates email strings using HTML decimal entities to prevent automated spam harvesting.
+ */
+function susie_obfuscate($email) {
+    if (empty($email)) return '';
+    $encoded = '';
+    for ($i = 0; $i < strlen($email); $i++) {
+        $encoded .= '&#' . ord($email[$i]) . ';';
+    }
+    return $encoded;
 }

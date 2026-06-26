@@ -1,7 +1,9 @@
 # ==========================================
-# Production / Fichiers générés
+# Production / Fichiers générés & Staging
 # ==========================================
-# dist/
+dist/
+dist_tmp/
+style.min.css
 
 # ==========================================
 # Fichiers parasites des OS (Mac, Windows, Linux)

@@ -1,6 +1,7 @@
 ---
 title: /dev/null ou l'art de repartir de zéro
 date: 2026-06-18
+description: En 2026, retour aux sources : un blog statique codé à la main et une envie de retrouver un web plus libre et humain.
 mastodon_id: 116778148911510831
 ---
 

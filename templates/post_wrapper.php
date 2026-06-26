@@ -1,44 +1,51 @@
 <?php
-// ==========================================
-// 1. BLOC DE MÉTADONNÉES (Pour le haut de l'article)
-// ==========================================
+/**
+ * Susie - Post Wrapper Template
+ * Wraps blog posts with metadata headers, Mastodon-powered comments, and navigation.
+ *
+ * @package Susie
+ */
+
+// 1. METADATA HEADER BLOCK (Top of the article)
 ob_start(); 
 ?>
 <div class="post-meta-header" style="margin-bottom: 30px;">
-    <span class="post-category" style="text-transform: uppercase; font-size: 0.8rem; color: #888;"><?= htmlspecialchars($category ?? 'Général') ?></span>
+    <span class="post-category" style="text-transform: uppercase; font-size: 0.8rem; color: #888;"><?= htmlspecialchars($category ?? 'General') ?></span>
     <h1 style="margin: 10px 0 5px 0; font-size: 2.5rem;"><?= htmlspecialchars($title) ?></h1>
-    <div class="post-meta" style="font-size: 0.9rem; color: #666;">Par&nbsp;<strong><?= htmlspecialchars($author ?? 'Jonathan Conde') ?></strong>&nbsp;le&nbsp;<time><?= htmlspecialchars($date) ?></time>
+    <div class="post-meta" style="font-size: 0.9rem; color: #666;">
+        By&nbsp;<strong><?= htmlspecialchars($author ?? ($config['site']['author'] ?? 'Susie User')) ?></strong>&nbsp;on&nbsp;<time><?= htmlspecialchars($date) ?></time>
     </div>
 </div>
 <?php 
 $post_header_html = ob_get_clean();
 
-
-// ==========================================
-// 2. BLOC DE NAVIGATION ET COMMENTAIRES (Pour le bas de l'article)
-// ==========================================
+// 2. NAVIGATION & COMMENTS BLOCK (Bottom of the article)
 ob_start(); 
-?>
-<?php 
-// Assemblage parfait en utilisant les variables natives de Susie
+
 $full_post_url = rtrim($base_url, '/') . '/blog/' . $filename_slug . '.html'; 
 $_masto_id = $meta['mastodon_id'] ?? '';
+$_masto_instance = rtrim($config['mastodon']['instance'] ?? 'mastodon.social', '/');
 ?>
 
 <hr class="comment-separator">
 
 <section class="post-comments-cta">
-    <h3>Envie de donner votre opinion ?</h3>
-    <p>Susie est un site statique sans trackers. Pour réagir, vous pouvez :</p>
+    <h3>Join the Conversation</h3>
+    <p>This is a tracker-free static site. You can reply using any of the following options:</p>
     
     <div class="comment-buttons">
-        <a href="mailto:ton-email@domaine.ch?subject=<?php echo urlencode('À propos de : ' . $title); ?>" class="btn-comment btn-email">
-             Répondre par Email
-        </a>
+        <?php 
+        $email_text = "Reply via Email";
+        $email_subject = "Regarding: " . $title;
+        $email_class = "btn-comment btn-email";
+
+        // Secured component path alignment
+        include __DIR__ . '/../components/email_link.php'; 
+        ?>
         
         <?php if (!empty($_masto_id)): ?>
-            <a href="https://tooting.ch/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" class="btn-comment btn-social">
-                 Commenter sur Mastodon
+            <a href="https://<?= $_masto_instance ?>/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" class="btn-comment btn-social">
+                 Comment on Mastodon
             </a>
         <?php endif; ?>
     </div>
@@ -46,28 +53,29 @@ $_masto_id = $meta['mastodon_id'] ?? '';
 
 <?php if (!empty($_masto_id)): ?>
     <div id="comments-section" style="padding-top: 2rem;">
-        <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">$ commentaires :</h3>
+        <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">Comments</h3>
         <p style="color: var(--muted-color); font-size: 14px; margin-bottom: 1.5rem; line-height: 1.4;">
-            Tu as un compte Mastodon ? Réponds directement&nbsp;à&nbsp;<a href="https://tooting.ch/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" style="color: var(--accent-color); text-decoration: none; border-bottom: 1px dashed var(--accent-color);">ce pouet</a>&nbsp;pour commenter cet article.
+            Have a Mastodon account? Reply to <a href="https://<?= $_masto_instance ?>/statuses/<?= $_masto_id ?>" target="_blank" rel="noopener" style="color: var(--accent-color); text-decoration: none; border-bottom: 1px dashed var(--accent-color);">this post</a> to join the conversation.
         </p>
-        <div id="comments-list">chargement des réactions...</div>
+        <div id="comments-list">Loading reactions...</div>
     </div>
 
-    <script>
+<script>
     (function() {
         var postId = "<?= $_masto_id ?>";
+        var instance = "<?= $_masto_instance ?>";
         var list = document.getElementById('comments-list');
         if (!list) return;
 
-        fetch('https://tooting.ch/api/v1/statuses/' + postId + '/context')
+        fetch('https://' + instance + '/api/v1/statuses/' + postId + '/context')
             .then(function(res) {
-                if (!res.ok) throw new Error('Erreur réseau');
+                if (!res.ok) throw new Error('Network error');
                 return res.json();
             })
             .then(function(data) {
                 list.innerHTML = '';
                 if (!data.descendants || data.descendants.length === 0) {
-                    list.innerHTML = '<p style="color: var(--muted-color); font-size: 14px;">[ aucun commentaire pour le moment ]</p>';
+                    list.innerHTML = '<p style="color: var(--muted-color); font-size: 14px;">[ No comments yet ]</p>';
                     return;
                 }
                 var commentsMap = {};
@@ -83,23 +91,26 @@ $_masto_id = $meta['mastodon_id'] ?? '';
                         rootComments.push(reply);
                     }
                 });
+                
                 function renderCommentTree(comment, depth) {
-                    var handle = comment.account.acct.includes('@') ? comment.account.acct : comment.account.acct + '@tooting.ch';
+                    var handle = comment.account.acct.includes('@') ? comment.account.acct : comment.account.acct + '@' + instance;
                     var marginLeft = Math.min(depth * 20, 80);
                     var commentDate = new Date(comment.created_at);
-                    var formattedDate = new Intl.DateTimeFormat('fr-CH', {
+                    var formattedDate = new Intl.DateTimeFormat('en-US', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
                     }).format(commentDate);
+                    
                     var commentEl = document.createElement('div');
                     commentEl.style.margin = '20px 0 20px ' + marginLeft + 'px';
                     commentEl.style.paddingLeft = '15px';
                     commentEl.style.borderLeft = depth > 0 ? '1px dashed var(--muted-color)' : '1px solid var(--accent-color)';
                     commentEl.innerHTML = '<div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px;"><img src="' + comment.account.avatar + '" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(128,128,128,0.2); margin-top: 2px;" /><div style="flex: 1; font-size: 14px; line-height: 1.3;"><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;"><strong style="color: var(--text-color); font-weight: bold; font-size: 15px;">' + (comment.account.display_name || comment.account.username) + '</strong><span style="font-size: 12px; color: var(--muted-color); opacity: 0.8; font-family: monospace;">' + formattedDate + '</span></div><div style="color: var(--muted-color); font-size: 13px; margin-top: 2px;">@' + handle + '</div></div></div><div class="masto-comment-content" style="color: var(--text-color); font-size: 15px; line-height: 1.6; word-break: break-word; padding-left: 48px;">' + comment.content + '</div>';
                     list.appendChild(commentEl);
+                    
                     if (comment.replies && comment.replies.length > 0) {
                         comment.replies.sort(function(a, b) {
                             return new Date(a.created_at) - new Date(b.created_at);
@@ -114,7 +125,7 @@ $_masto_id = $meta['mastodon_id'] ?? '';
                 });
             })
             .catch(function(err) {
-                list.innerHTML = '<p style="color: var(--muted-color); font-size: 14px;">[ Impossible de charger les commentaires : ' + err.message + ' ]</p>';
+                list.innerHTML = '<p style="color: var(--muted-color); font-size: 14px;">[ Unable to load comments: ' + err.message + ' ]</p>';
             });
     })();
     </script>
@@ -135,8 +146,5 @@ $_masto_id = $meta['mastodon_id'] ?? '';
 <?php
 $navigation_html = ob_get_clean();
 
-
-// ==========================================
-// 3. INCLUSION DU LAYOUT
-// ==========================================
+// 3. RENDER THE MAIN LAYOUT
 include __DIR__ . '/../layouts/main.php';

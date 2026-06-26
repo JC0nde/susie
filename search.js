@@ -31,7 +31,7 @@ if (trigger && modal) {
             modal.style.display === 'none' ? openSearch() : closeSearch();
         }
         if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-            e.preventDefault(); // Bloque la recherche native du navigateur !
+            e.preventDefault(); /* Securite : Bloque la recherche native du navigateur */
             if (modal.style.display === 'none' || !modal.style.display) {
                 openSearch();
             }
@@ -44,32 +44,25 @@ if (trigger && modal) {
     });
 
     function updateSelection(links) {
-        links.forEach((link, index) => {
-            const li = link.parentElement;
+        Array.from(links).forEach((link, index) => {
             if (index === activeIndex) {
-                li.style.backgroundColor = 'rgba(0, 255, 204, 0.15)';
-                li.style.paddingLeft = '5px';
-                li.style.borderRadius = '3px';
-                link.style.color = '#fff';
+                link.style.background = 'var(--accent-color)';
+                link.style.color = '#121212';
+                link.focus();
             } else {
-                li.style.backgroundColor = '';
-                li.style.paddingLeft = '0px';
-                link.style.color = '#00ffcc';
+                link.style.background = 'none';
+                link.style.color = 'var(--accent-color)';
             }
         });
     }
 
-    input.addEventListener('keydown', (e) => {
-        const links = results.querySelectorAll('a');
-        if (links.length === 0) return;
+    window.addEventListener('keydown', (e) => {
+        const links = results.getElementsByTagName('a');
+        if (links.length === 0 || modal.style.display === 'none') return;
 
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && activeIndex >= 0) {
             e.preventDefault();
-            if (links.length === 1) {
-                links[0].click();
-            } else if (activeIndex >= 0) {
-                links[activeIndex].click();
-            }
+            links[activeIndex].click();
             return;
         }
 
@@ -104,12 +97,12 @@ if (trigger && modal) {
             const li = document.createElement('li');
             li.style.margin = '10px 0';
             li.style.transition = 'all 0.1s ease';
-            li.innerHTML = `<a href="${item.slug}" style="color: #00ffcc; text-decoration: none; display: inline-block; width: 100%;"><strong>${item.title}</strong></a><br><small style="color: #aaa;">${item.description}</small>`;
+            li.innerHTML = `<a href="${item.slug}" style="color: var(--accent-color); text-decoration: none; display: inline-block; width: 100%;"><strong>${item.title}</strong></a><br><small style="color: var(--muted-color);">${item.description || ''}</small>`;
             results.appendChild(li);
         });
 
         if (matches.length === 0) {
-            results.innerHTML = '<li style="color: #888;">Aucun résultat trouvé.</li>';
+            results.innerHTML = '<li style="color: var(--muted-color); font-family: monospace;">Aucun résultat trouvé.</li>';
         }
     });
 }
